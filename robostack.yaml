@@ -77,6 +77,8 @@ cppzmq:
   robostack: [cppzmq]
 curl:
   robostack: [libcurl]
+curlpp-dev:
+  robostack: [curlpp]
 cython:
   robostack: [cython]
 doxygen:
@@ -780,6 +782,8 @@ python3-catkin-pkg-modules:
   robostack: [catkin_pkg]
 python3-catkin-tools:
   robostack: [catkin_tools]
+python3-cantools-pip:
+  robostack: [cantools]
 python3-cherrypy3:
   robostack: [cherrypy]
 python3-click:
@@ -1037,6 +1041,8 @@ sdl-image:
   robostack: [sdl_image]
 sdl2:
   robostack: [sdl2]
+smartmontools:
+  robostack: [smartmontools]
 socat:
   robostack:
     linux: [socat]
