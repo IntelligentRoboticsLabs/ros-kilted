@@ -804,6 +804,8 @@ python3-dev:
   robostack: [python]
 python3-docopt:
   robostack: [docopt]
+python3-docstring-parser:
+  robostack: [docstring_parser]
 python3-docutils:
   robostack: [docutils]
 python3-empy:
@@ -875,6 +877,8 @@ python3-opengl:
     linux: [pyopengl, libopengl-devel, libgl-devel]
     osx: [pyopengl]
     win64: [pyopengl]
+python3-osrf-pycommon:
+  robostack: [osrf_pycommon]
 python3-packaging:
   robostack: [packaging]
 python3-pandas:
@@ -889,6 +893,8 @@ python3-pip:
   robostack: [pip]
 python3-pkg-resources:
   robostack: []
+python3-prompt-toolkit:
+  robostack: [prompt-toolkit]
 python3-protobuf:
   robostack: [protobuf]
 python3-psutil:
@@ -949,6 +955,8 @@ python3-scipy:
   robostack: [scipy]
 python3-serial:
   robostack: [pyserial]
+python3-setproctitle:
+  robostack: [setproctitle]
 python3-setuptools:
   robostack: [setuptools]
 python3-simplejson:
