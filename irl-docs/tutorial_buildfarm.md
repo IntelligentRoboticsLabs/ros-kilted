@@ -184,6 +184,24 @@ La publicación a un channel se hace típicamente **en un job separado** (o en o
 - Si fallan parches:
   - revisa `patch/` y las secciones `source: ... patches:` de la receta generada.
 
+### Eigen: detectar y evitar contaminación desde el sistema
+
+Si un workspace consumidor falla con errores raros de Eigen, casi siempre es por mezclar dos árboles de includes:
+
+- System Eigen: `/usr/include/eigen3`
+- Pixi/conda Eigen: `$CONDA_PREFIX/include/eigen3`
+
+Checklist:
+- Busca `/usr/include/eigen3` en `build/**/flags.make` del workspace consumidor.
+- Si aparece, identifica el “inyector” mirando qué dependencia mete `-isystem /usr/include/eigen3`.
+
+Lecciones aprendidas de kilted:
+- Algunos paquetes pueden exportar `INTERFACE_INCLUDE_DIRECTORIES` contaminados en sus `*.cmake` instalados. En ese caso, una técnica efectiva (y reproducible) es un `build:post_process` en la receta que haga un replace exacto (ej. eliminar `;/usr/include/eigen3` en `*.cmake`).
+- PCL puede forzar `find_package(Eigen3 3.3 REQUIRED NO_MODULE)`; si el entorno pixi instala Eigen 5.x, esa configuración puede considerarse incompatible y acabar resolviendo Eigen del sistema.
+
+Referencia concreta (runbook con el caso real y las recetas):
+- [irl-docs/buildfarm_easynav.md](buildfarm_easynav.md)
+
 ---
 
 ## 9) Checklist rápido (Linux)

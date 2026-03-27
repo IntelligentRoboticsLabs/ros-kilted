@@ -1,0 +1,52 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index fbd8c04..5ce3643 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -10,6 +10,28 @@ endif()
+ 
+ option(EASYNAV_TRACING "Enable Yaets tracing with TRACE_EVENT" ON)
+ 
+ find_package(ament_cmake REQUIRED)
++
++# Avoid leaking system Eigen (e.g. /usr/include/eigen3) into exported include
++# directories through PCL.
++set(_eigen_prefix "")
++if(DEFINED ENV{PREFIX})
++  set(_eigen_prefix "$ENV{PREFIX}")
++elseif(DEFINED ENV{CONDA_PREFIX})
++  set(_eigen_prefix "$ENV{CONDA_PREFIX}")
++endif()
++if(_eigen_prefix)
++  set(Eigen3_DIR "${_eigen_prefix}/share/eigen3/cmake" CACHE PATH "" FORCE)
++  set(EIGEN3_INCLUDE_DIR "${_eigen_prefix}/include/eigen3" CACHE PATH "" FORCE)
++  set(EIGEN3_INCLUDE_DIRS "${_eigen_prefix}/include/eigen3" CACHE PATH "" FORCE)
++endif()
++find_package(Eigen3 CONFIG QUIET)
++
+ find_package(rclcpp REQUIRED)
+ find_package(rclcpp_lifecycle REQUIRED)
+ find_package(nav_msgs REQUIRED)
+ find_package(geometry_msgs REQUIRED)
+ find_package(sensor_msgs REQUIRED)
+ find_package(vision_msgs REQUIRED)
+ find_package(yaets REQUIRED)
+ find_package(PCL REQUIRED COMPONENTS common io)
++
++# PCLConfig.cmake may inject system Eigen include paths; filter them out to
++# prevent mixing system Eigen with the conda/pixi Eigen.
+if(PCL_INCLUDE_DIRS)
+	# Be permissive: the entry may have a trailing slash or whitespace depending
+	# on how PCL was configured.
+	list(FILTER PCL_INCLUDE_DIRS EXCLUDE REGEX "/usr/include/eigen3")
+endif()
++if(EIGEN3_INCLUDE_DIRS AND PCL_INCLUDE_DIRS)
++  list(FIND PCL_INCLUDE_DIRS "${EIGEN3_INCLUDE_DIRS}" _eigen_idx)
++  if(_eigen_idx EQUAL -1)
++    list(APPEND PCL_INCLUDE_DIRS "${EIGEN3_INCLUDE_DIRS}")
++  endif()
++endif()
++
+ find_package(pcl_conversions REQUIRED)
+ find_package(cv_bridge REQUIRED)
+ find_package(tf2_ros REQUIRED)
+ find_package(tf2_geometry_msgs REQUIRED)

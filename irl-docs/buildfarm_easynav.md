@@ -157,6 +157,43 @@ pixi run rattler-build upload prefix --channel "${CHANNEL}" --skip-existing outp
 
 ---
 
+## Incidente real (debug): mezcla de Eigen (sistema vs pixi)
+
+En esta sesión apareció un fallo recurrente al compilar workspaces consumidores (p. ej. `easynav_plugins_ws`): se estaban mezclando cabeceras de Eigen del sistema (`/usr/include/eigen3`) con las del entorno pixi (`$CONDA_PREFIX/include/eigen3`).
+
+### Síntomas
+
+- Errores de compilación en Eigen del tipo `EIGEN_NOEXCEPT does not name a type`, redefiniciones, etc.
+- En `build/**/flags.make` aparece explícitamente `-isystem /usr/include/eigen3`.
+
+### Raíces y fixes aplicados
+
+1) **Exports CMake contaminados (producer-side)**
+
+Algunos paquetes (observado en `ros-kilted-navmap-ros` y `ros-kilted-easynav-common`) llegaban a exportar `INTERFACE_INCLUDE_DIRECTORIES` con `;/usr/include/eigen3` dentro de ficheros `*.cmake` instalados.
+
+Fix aplicado en las recetas:
+- En [recipes/ros-kilted-navmap-ros/recipe.yaml](../recipes/ros-kilted-navmap-ros/recipe.yaml) y [recipes/ros-kilted-easynav-common/recipe.yaml](../recipes/ros-kilted-easynav-common/recipe.yaml):
+  - `build:number` incrementado a `19`.
+  - Añadida dependencia explícita `eigen` en `host` y `run`.
+  - `build:post_process` eliminando la ocurrencia exacta `;/usr/include/eigen3` de los `*.cmake` instalados.
+
+2) **PCL fuerza `find_package(Eigen3 3.3 ...)` (consumer-side)**
+
+Aunque los exports de EasyNav/NavMap ya no contaminaban, `PCLConfig.cmake` puede forzar `find_package(Eigen3 3.3 REQUIRED NO_MODULE)`.
+
+Si el solver instala `eigen` 5.x en el entorno, el `Eigen3ConfigVersion.cmake` de Eigen 5 no se considera compatible con la request `3.3` y CMake termina encontrando el Eigen del sistema, reintroduciendo `/usr/include/eigen3`.
+
+Fix recomendado en el consumidor:
+- Pin en pixi: `eigen = "<5"` (por ejemplo 3.4.0).
+
+### Cómo verificarlo rápido
+
+- Revisa `build/**/flags.make` y confirma que **no** aparece `/usr/include/eigen3`.
+- Alternativamente, crea un mini proyecto CMake que haga `find_package(PCL CONFIG REQUIRED)` y verifica que `Eigen3::Eigen` apunta a `$CONDA_PREFIX/include/eigen3`.
+
+---
+
 ## Registro de ejecución (esta sesión)
 
 Resultados verificados (linux-64):
@@ -192,6 +229,6 @@ Paquetes construidos (NavMap):
 - `ros-kilted-navmap-ros-interfaces`
 
 Artefactos (linux-64) listados en `output/linux-64/`:
-- `ros-kilted-navmap-core-0.4.0-np2py312h2ed9cc7_15.conda`
-- `ros-kilted-navmap-ros-0.4.0-np2py312h2ed9cc7_15.conda`
-- `ros-kilted-navmap-ros-interfaces-0.4.0-np2py312h2ed9cc7_15.conda`
+- (Ejemplo) `ros-kilted-navmap-core-0.4.0-*_19.conda`
+- (Ejemplo) `ros-kilted-navmap-ros-0.4.0-*_19.conda`
+- (Ejemplo) `ros-kilted-navmap-ros-interfaces-0.4.0-*_19.conda`
