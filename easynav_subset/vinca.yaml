@@ -1,0 +1,61 @@
+ros_distro: kilted
+
+# mapping for package keys
+conda_index:
+  - robostack.yaml
+  - packages-ignore.yaml
+
+# Keep in sync with the main build_number used by ros-kilted
+build_number: 15
+
+mutex_package:
+  name: "ros2-distro-mutex"
+  version: "0.13.0"
+  upper_bound: "x.x"
+  run_constraints:
+    - libboost 1.88.*
+    - libboost-devel 1.88.*
+    - pcl 1.15.1.*
+    - gazebo 11.*
+    - libprotobuf 6.31.1.*
+    - vtk 9.5.2.*
+
+packages_skip_by_deps:
+  - if: not linux
+    then:
+      - pendulum_control
+      - rttest
+      - tlsf
+      - tlsf_cpp
+
+packages_remove_from_deps:
+  - if: not linux
+    then:
+      - pendulum_control
+      - rttest
+      - tlsf
+      - tlsf_cpp
+
+# Treat packages already built in robostack-kilted as existing, so we only
+# generate recipes that are missing for this EasyNav subset.
+skip_existing:
+  - https://conda.anaconda.org/robostack-kilted/
+
+# Only select EasyNavigation packages; dependencies are pulled in automatically.
+packages_select_by_deps:
+  - easynav
+  - easynav_common
+  - easynav_controller
+  - easynav_core
+  - easynav_interfaces
+  - easynav_localizer
+  - easynav_maps_manager
+  - easynav_planner
+  - easynav_sensors
+  - easynav_support_py
+  - easynav_system
+  - easynav_tools
+
+patch_dir: patch
+rosdistro_snapshot: rosdistro_snapshot.yaml
+rosdistro_additional_recipes: rosdistro_additional_recipes.yaml

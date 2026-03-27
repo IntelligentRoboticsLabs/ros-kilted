@@ -1,0 +1,48 @@
+ros_distro: kilted
+
+conda_index:
+  - robostack.yaml
+  - packages-ignore.yaml
+
+build_number: 15
+
+mutex_package:
+  name: "ros2-distro-mutex"
+  version: "0.13.0"
+  upper_bound: "x.x"
+  run_constraints:
+    - libboost 1.88.*
+    - libboost-devel 1.88.*
+    - pcl 1.15.1.*
+    - gazebo 11.*
+    - libprotobuf 6.31.1.*
+    - vtk 9.5.2.*
+
+packages_skip_by_deps:
+  - if: not linux
+    then:
+      - pendulum_control
+      - rttest
+      - tlsf
+      - tlsf_cpp
+
+packages_remove_from_deps:
+  - if: not linux
+    then:
+      - pendulum_control
+      - rttest
+      - tlsf
+      - tlsf_cpp
+
+# Skip packages already built/published upstream; we only want missing NavMap bits.
+skip_existing:
+  - https://conda.anaconda.org/robostack-kilted/
+
+packages_select_by_deps:
+  - navmap_core
+  - navmap_ros
+  - navmap_ros_interfaces
+
+patch_dir: patch
+rosdistro_snapshot: rosdistro_snapshot.yaml
+rosdistro_additional_recipes: rosdistro_additional_recipes.yaml
