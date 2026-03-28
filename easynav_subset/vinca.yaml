@@ -43,6 +43,12 @@ skip_existing:
 
 # Only select EasyNavigation packages; dependencies are pulled in automatically.
 packages_select_by_deps:
+  # NavMap (many EasyNav plugins depend on these)
+  - navmap_core
+  - navmap_ros
+  - navmap_ros_interfaces
+
+  # EasyNav core packages
   - easynav
   - easynav_common
   - easynav_controller
@@ -55,6 +61,30 @@ packages_select_by_deps:
   - easynav_support_py
   - easynav_system
   - easynav_tools
+
+  # EasyNav plugins (released separately in rosdistro as easynav_plugins-release)
+  - easynav_costmap_maps_manager
+  - easynav_costmap_localizer
+  - easynav_costmap_planner
+  - easynav_fusion_localizer
+  - easynav_gps_localizer
+  - easynav_mpc_controller
+  - easynav_mppi_controller
+  - easynav_navmap_localizer
+  - easynav_navmap_maps_manager
+  - easynav_navmap_planner
+  - easynav_octomap_maps_manager
+  - easynav_routes_maps_manager
+  - easynav_serest_controller
+  - easynav_simple_common
+  - easynav_simple_controller
+  - easynav_simple_localizer
+  - easynav_simple_maps_manager
+  - easynav_simple_planner
+  - easynav_vff_controller
+
+  # Runtime utilities required by easynav_testbeds_ws launchers
+  - twist_stamper
 
 patch_dir: patch
 rosdistro_snapshot: rosdistro_snapshot.yaml

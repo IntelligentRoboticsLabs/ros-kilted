@@ -38,6 +38,39 @@ create_snapshot = { cmd = "vinca-snapshot -d kilted -o rosdistro_snapshot.yaml" 
 upload = "rattler-build upload anaconda -o robostack-kilted -a $ANACONDA_API_TOKEN"
 build_continue_on_failure = { cmd = "rattler-build build --recipe-dir ./recipes -m ./conda_build_config.yaml -c robostack-kilted -c https://repo.prefix.dev/conda-forge --continue-on-failure --skip-existing", depends-on = ["generate-recipes"] }
 
+# Subset helpers (EasyNav + easynav_plugins)
+# These tasks use ./easynav_subset/vinca.yaml to generate only the EasyNav-related recipes.
+
+[tasks.easynav-clean]
+cmd = "rm -rf output/{{ PLATFORM }} output/bld"
+depends-on = ["remove-recipes"]
+args = [{ arg = "PLATFORM", default = "linux-64" }]
+description = "Remove generated recipes and build artifacts for the EasyNav subset (recipes/, output/<platform>/, output/bld)."
+
+[tasks.easynav-generate-recipes]
+cmd = "vinca -d ./easynav_subset --platform {{ PLATFORM }} -m"
+depends-on = ["easynav-clean"]
+args = [{ arg = "PLATFORM", default = "linux-64" }]
+description = "Generate recipes for the EasyNav subset using easynav_subset/vinca.yaml."
+
+[tasks.easynav-build]
+cmd = "rattler-build build --recipe-dir ./recipes --target-platform {{ PLATFORM }} -m ./conda_build_config.yaml -c https://prefix.dev/robostack-kilted -c https://prefix.dev/conda-forge --skip-existing"
+depends-on = ["easynav-generate-recipes"]
+args = [{ arg = "PLATFORM", default = "linux-64" }]
+description = "Build conda packages for the EasyNav subset recipes."
+
+[tasks.easynav-index]
+cmd = "rattler-index fs ./output --force"
+depends-on = ["easynav-build"]
+args = [{ arg = "PLATFORM", default = "linux-64" }]
+description = "Index ./output as a local conda channel (repodata.json) after building."
+
+[tasks.easynav-all]
+cmd = "echo 'EasyNav subset: clean → recipes → build → index done.'"
+depends-on = ["easynav-index"]
+args = [{ arg = "PLATFORM", default = "linux-64" }]
+description = "One-liner: clean, generate recipes, build, and index the EasyNav subset."
+
 [tasks.build]
 cmd = "rattler-build build --recipe-dir ./recipes -m ./conda_build_config.yaml -c https://prefix.dev/robostack-kilted -c https://prefix.dev/conda-forge --skip-existing"
 depends-on = ["generate-recipes"]

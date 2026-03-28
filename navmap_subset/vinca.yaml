@@ -34,7 +34,7 @@ packages_remove_from_deps:
       - tlsf
       - tlsf_cpp
 
-# Skip packages already built/published upstream; we only want missing NavMap bits.
+# Skip packages already built/published upstream; we only want missing bits.
 skip_existing:
   - https://conda.anaconda.org/robostack-kilted/
 
