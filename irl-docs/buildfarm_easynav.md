@@ -22,6 +22,33 @@ pixi install
 
 ---
 
+## 1b) Vía rápida (tasks de pixi)
+
+Si solo quieres el flujo “clean → recetas → build → index” sin copiar/pegar comandos, usa los tasks del buildfarm:
+
+```bash
+cd ros-kilted
+pixi run easynav-all
+```
+
+Por defecto construye `linux-64`. Para otra plataforma:
+
+```bash
+cd ros-kilted
+pixi run easynav-all --platform linux-64
+```
+
+También puedes ejecutar pasos sueltos:
+
+```bash
+cd ros-kilted
+pixi run easynav-generate-recipes
+pixi run easynav-build
+pixi run easynav-index
+```
+
+---
+
 ## 2) Selección “solo EasyNav”
 
 `vinca` no acepta un flag tipo `--config`; usa el `vinca.yaml` del directorio que se le pasa con `-d`.
@@ -31,7 +58,9 @@ Por eso creamos un directorio dedicado con un `vinca.yaml` mínimo:
 - `ros-kilted/easynav_subset/vinca.yaml`
 
 Ahí se define:
-- `packages_select_by_deps`: solo `easynav` + `easynav_*`
+- `packages_select_by_deps`: `easynav` + `easynav_*` y también `navmap_*` (porque varios plugins dependen de NavMap)
+- incluye también los plugins `easynav_*` que se liberan desde `easynav_plugins-release` (si están presentes en `rosdistro_snapshot.yaml`).
+- incluye utilidades de runtime necesarias para algunos launchers (por ejemplo `twist_stamper`).
 - `skip_existing`: `https://conda.anaconda.org/robostack-kilted/` (para no regenerar recetas de paquetes ya construidos)
 - `rosdistro_snapshot`: `../rosdistro_snapshot.yaml`
 - `patch_dir`: `../patch`
@@ -46,7 +75,7 @@ Importante (comportamiento observado):
 
 Si tu build falla por `find_package(navmap_core)` (o similares), puedes construir primero NavMap como subset, igual que EasyNav.
 
-Perfil mínimo:
+Perfil mínimo (solo NavMap):
 
 - `ros-kilted/navmap_subset/vinca.yaml`
 
@@ -61,7 +90,7 @@ Generación de recetas (tras limpiar):
 ```bash
 cd ros-kilted
 pixi run remove-recipes
-pixi run -v vinca -d ./navmap_subset --platform linux-64 -m -n
+pixi run -v vinca -d ./navmap_subset --platform linux-64 -m
 ```
 
 Verificación rápida:
@@ -86,7 +115,7 @@ pixi run remove-recipes
 
 ```bash
 cd ros-kilted
-pixi run -v vinca -d ./easynav_subset --platform linux-64 -m -n
+pixi run -v vinca -d ./easynav_subset --platform linux-64 -m
 ```
 
 Verificación rápida:
