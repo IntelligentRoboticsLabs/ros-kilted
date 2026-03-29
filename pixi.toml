@@ -42,34 +42,73 @@ build_continue_on_failure = { cmd = "rattler-build build --recipe-dir ./recipes 
 # These tasks use ./easynav_subset/vinca.yaml to generate only the EasyNav-related recipes.
 
 [tasks.easynav-clean]
-cmd = "rm -rf output/{{ PLATFORM }} output/bld"
+cmd = "rm -rf output/{{ platform }} output/bld"
 depends-on = ["remove-recipes"]
-args = [{ arg = "PLATFORM", default = "linux-64" }]
+args = [{ arg = "platform", default = "linux-64" }]
 description = "Remove generated recipes and build artifacts for the EasyNav subset (recipes/, output/<platform>/, output/bld)."
 
 [tasks.easynav-generate-recipes]
-cmd = "vinca -d ./easynav_subset --platform {{ PLATFORM }} -m"
+cmd = "vinca -d ./easynav_subset --platform {{ platform }} -m"
 depends-on = ["easynav-clean"]
-args = [{ arg = "PLATFORM", default = "linux-64" }]
+args = [{ arg = "platform", default = "linux-64" }]
 description = "Generate recipes for the EasyNav subset using easynav_subset/vinca.yaml."
 
 [tasks.easynav-build]
-cmd = "rattler-build build --recipe-dir ./recipes --target-platform {{ PLATFORM }} -m ./conda_build_config.yaml -c https://prefix.dev/robostack-kilted -c https://prefix.dev/conda-forge --skip-existing"
+cmd = "rattler-build build --recipe-dir ./recipes --target-platform {{ platform }} -m ./conda_build_config.yaml -c https://prefix.dev/robostack-kilted -c https://prefix.dev/conda-forge --skip-existing"
 depends-on = ["easynav-generate-recipes"]
-args = [{ arg = "PLATFORM", default = "linux-64" }]
+args = [{ arg = "platform", default = "linux-64" }]
 description = "Build conda packages for the EasyNav subset recipes."
 
 [tasks.easynav-index]
 cmd = "rattler-index fs ./output --force"
 depends-on = ["easynav-build"]
-args = [{ arg = "PLATFORM", default = "linux-64" }]
+args = [{ arg = "platform", default = "linux-64" }]
 description = "Index ./output as a local conda channel (repodata.json) after building."
 
 [tasks.easynav-all]
 cmd = "echo 'EasyNav subset: clean → recipes → build → index done.'"
 depends-on = ["easynav-index"]
-args = [{ arg = "PLATFORM", default = "linux-64" }]
+args = [{ arg = "platform", default = "linux-64" }]
 description = "One-liner: clean, generate recipes, build, and index the EasyNav subset."
+
+# Subset helpers (PlanSys2)
+# These tasks use ./plansys2_subset/vinca.yaml to generate only the PlanSys2-related recipes.
+
+[tasks.plansys2-clean]
+cmd = "rm -rf output/{{ platform }} output/bld"
+depends-on = ["remove-recipes"]
+args = [{ arg = "platform", default = "linux-64" }]
+description = "Remove generated recipes and build artifacts for the PlanSys2 subset (recipes/, output/<platform>/, output/bld)."
+
+[tasks.plansys2-generate-recipes]
+cmd = "vinca -d ./plansys2_subset --platform {{ platform }} -m"
+depends-on = ["plansys2-clean"]
+args = [{ arg = "platform", default = "linux-64" }]
+description = "Generate recipes for the PlanSys2 subset using plansys2_subset/vinca.yaml."
+
+[tasks.plansys2-build]
+cmd = "rattler-build build --recipe-dir ./recipes --target-platform {{ platform }} -m ./conda_build_config.yaml -c https://prefix.dev/robostack-kilted -c https://prefix.dev/conda-forge --skip-existing"
+depends-on = ["plansys2-build-popf", "plansys2-generate-recipes"]
+args = [{ arg = "platform", default = "linux-64" }]
+description = "Build conda packages for the PlanSys2 subset recipes."
+
+[tasks.plansys2-build-popf]
+cmd = "bash -lc 'rattler-build build --recipe ./recipes/ros-kilted-popf/recipe.yaml --target-platform {{ platform }} -m ./conda_build_config.yaml -c https://prefix.dev/robostack-kilted -c https://prefix.dev/conda-forge --skip-existing && rattler-index fs ./output --force'"
+depends-on = ["plansys2-generate-recipes"]
+args = [{ arg = "platform", default = "linux-64" }]
+description = "Build ros-kilted-popf first (needed by plansys2-popf-plan-solver), so subsequent PlanSys2 recipes can resolve dependencies after a clean." 
+
+[tasks.plansys2-index]
+cmd = "rattler-index fs ./output --force"
+depends-on = ["plansys2-build"]
+args = [{ arg = "platform", default = "linux-64" }]
+description = "Index ./output as a local conda channel (repodata.json) after building."
+
+[tasks.plansys2-all]
+cmd = "echo 'PlanSys2 subset: clean → recipes → build → index done.'"
+depends-on = ["plansys2-index"]
+args = [{ arg = "platform", default = "linux-64" }]
+description = "One-liner: clean, generate recipes, build, and index the PlanSys2 subset."
 
 [tasks.build]
 cmd = "rattler-build build --recipe-dir ./recipes -m ./conda_build_config.yaml -c https://prefix.dev/robostack-kilted -c https://prefix.dev/conda-forge --skip-existing"

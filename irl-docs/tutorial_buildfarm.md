@@ -1,52 +1,56 @@
-# Tutorial: reproducir la buildfarm de RoboStack y publicar a prefix.dev
+# Tutorial: run the buildfarm and publish to prefix.dev
 
-Este workspace contiene una buildfarm basada en **pixi** + **vinca** + **rattler-build** para generar recetas Conda para ROS (ej. `ros-kilted/`) y construir artefactos **`.conda`** listos para subir a un canal en **https://prefix.dev/**.
+This workspace contains a buildfarm based on **Pixi** + **Vinca** + **rattler-build**.
+It generates Conda recipes (for example under `ros-kilted/recipes/`) and produces **`.conda`** artifacts that can be indexed into a local file-based channel and optionally uploaded to **https://prefix.dev/**.
 
-> Alcance: este tutorial describe el flujo práctico para **reproducir builds** y **subir paquetes** a prefix.dev. Está basado en los comandos definidos en `ros-kilted/pixi.toml` y en los scripts/CI del repo.
+Scope: this is the shared, repo-level runbook. Software-specific details live in:
 
----
+- `irl-docs/easynav/buildfarm_easynav.md`
+- `irl-docs/plansys2/buildfarm_plansys2.md`
 
-## 0) Requisitos
+Pixi background and common troubleshooting lives in:
 
-- Linux/macOS/Windows (para build nativa por plataforma). En general:
-  - `linux-64` se puede construir en Linux x86_64.
-  - `osx-64` / `osx-arm64` se construyen en macOS.
-  - `win-64` se construye en Windows.
-  - `linux-aarch64` se construye en Linux ARM64.
-- Acceso a internet (para descargar dependencias desde `conda-forge` en prefix.dev).
-- Una cuenta en **prefix.dev** y un **channel** (por ejemplo: `tu-org/tu-canal`) con un **API key**.
-
-> Nota: este repo usa `rattler-build upload prefix`, que soporta `PREFIX_API_KEY`.
+- `irl-docs/pixi.md`
 
 ---
 
-## 1) Dónde está el “proyecto” de build
+## 0) Requirements
 
-En este workspace, el proyecto está en:
+- A native build host for your target platform:
+  - `linux-64` builds on Linux x86_64.
+  - `osx-64` / `osx-arm64` build on macOS.
+  - `win-64` builds on Windows.
+  - `linux-aarch64` builds on Linux ARM64.
+- Internet access (to fetch dependencies from upstream channels).
+- Optional: a prefix.dev account + channel and an API key.
+
+This repo uses `rattler-build upload prefix` which reads `PREFIX_API_KEY`.
+
+---
+
+## 1) Where the build project lives
+
+The main build project is:
 
 - `ros-kilted/`
 
-Ahí encontrarás:
+Key files/folders:
 
-- `pixi.toml`: define dependencias y tareas (`generate-recipes`, `build`, `check-patches`, etc.).
-- `vinca.yaml`, `robostack.yaml`, `rosdistro_snapshot.yaml`: inputs para que `vinca` genere recetas.
-- `patch/`: parches que se aplican durante el build.
-- `conda_build_config.yaml`: configuración/pinnings de conda-build/rattler-build.
+- `pixi.toml`: environment + tasks.
+- `vinca.yaml`, `robostack.yaml`, `rosdistro_snapshot.yaml`: inputs for recipe generation.
+- `patch/`: patch files.
+- `conda_build_config.yaml`: variant/pinning config (important for reproducible builds).
 
 ---
 
-## 2) Crear el entorno reproducible con pixi
-
-Desde el directorio del proyecto:
+## 2) Create the Pixi environment
 
 ```bash
 cd ros-kilted
 pixi install
 ```
 
-Esto crea un entorno con (entre otros) `vinca`, `rattler-build` y `rattler-index`.
-
-Consejo: si quieres ver versiones:
+Useful version checks:
 
 ```bash
 pixi --version
@@ -55,97 +59,91 @@ pixi run rattler-build --version
 
 ---
 
-## 3) Generar recetas (vinca → `recipes/`)
+## 3) Generate recipes (Vinca → `recipes/`)
 
-`vinca` genera un árbol `recipes/<paquete>/recipe.yaml` a partir del rosdistro/config del repo.
-
-Ejemplo para Linux x86_64:
+Generate recipes for Linux x86_64:
 
 ```bash
+cd ros-kilted
+pixi run remove-recipes
 pixi run vinca --platform linux-64 -m -n
 ```
 
-- `--platform` controla para qué plataforma se generan las recetas.
-- `-m` (multiple) genera múltiples recetas.
-- `-n` suele evitar algunos pasos de “normalización”/re-resolución (depende de vinca), y es lo que usa CI en PR.
+Notes:
 
-Si quieres empezar limpio:
-
-```bash
-pixi run remove-recipes
-```
+- `--platform` controls the platform the recipes target.
+- `-m` (multiple) generates multiple recipes.
+- `-n` matches what CI typically uses for PR builds.
 
 ---
 
-## 4) (Recomendado) Comprobar que los parches aplican
-
-Antes de compilar todo, conviene detectar pronto si un patch ya no aplica.
+## 4) (Recommended) Check patches apply
 
 ```bash
+cd ros-kilted
 pixi run check-patches
 ```
 
-Esto crea una carpeta `recipes_only_patch/` con recetas mínimas y ejecuta la fase de parches con `rattler-build`.
-
 ---
 
-## 5) Construir paquetes `.conda` con rattler-build
+## 5) Build `.conda` artifacts (rattler-build)
 
-### Build de todo lo generado
+Build everything under `recipes/`:
 
 ```bash
+cd ros-kilted
 pixi run rattler-build build \
   --recipe-dir recipes \
   --target-platform linux-64 \
   -m ./conda_build_config.yaml \
+  -c https://prefix.dev/robostack-kilted \
   -c https://repo.prefix.dev/conda-forge \
   --skip-existing
 ```
 
-- `--skip-existing` evita reconstruir paquetes ya presentes en los channels.
-- Los artefactos suelen quedar en `output/<platform>/` (por ejemplo `output/linux-64/`).
+Artifacts end up in `output/<platform>/` (for example `output/linux-64/`).
 
-### Build de un paquete concreto
-
-El repo define una tarea `build-one`, pero **ojo**: es una “task template” y no está pensada para pasar `--help` (pixi intenta ejecutarla literalmente).
-
-Para construir uno a mano (recomendado):
+Build a single recipe manually:
 
 ```bash
+cd ros-kilted
 PACKAGE=ros-kilted-ros-workspace
 pixi run rattler-build build \
   --recipe ./recipes/${PACKAGE}/recipe.yaml \
   --target-platform linux-64 \
   -m ./conda_build_config.yaml \
+  -c https://prefix.dev/robostack-kilted \
   -c https://repo.prefix.dev/conda-forge
 ```
 
-Si el paquete tiene parches locales en `patch/`, asegúrate de que la receta los referencia o de copiarlos al lugar esperado por la receta (según el layout que genere `vinca`).
+---
+
+## 6) Index a local file-based channel (optional, but recommended)
+
+If you want consumer workspaces to install from your local output folder, index it:
+
+```bash
+cd ros-kilted
+pixi run rattler-index fs ./output --force
+```
+
+Important: consumer environments must point to the **channel root** (the folder that contains both `linux-64/` and `noarch/`).
 
 ---
 
-## 6) Subir artefactos a prefix.dev
+## 7) Upload artifacts to prefix.dev
 
-`rattler-build` soporta directamente prefix.dev:
+Authentication:
 
 ```bash
-pixi run rattler-build upload prefix --help
+export PREFIX_API_KEY="...your_api_key..."
 ```
 
-### Autenticación
-
-Configura el API key (en tu shell local o en CI):
+Upload `.conda` files from a platform subdir:
 
 ```bash
-export PREFIX_API_KEY="...tu_api_key..."
-```
-
-### Subida
-
-Supongamos que has construido para `linux-64` y tienes archivos en `output/linux-64/`:
-
-```bash
-CHANNEL="tu-org/tu-canal"
+cd ros-kilted
+CHANNEL="your-org/your-channel"
 
 pixi run rattler-build upload prefix \
   --channel "${CHANNEL}" \
@@ -153,58 +151,63 @@ pixi run rattler-build upload prefix \
   output/linux-64/*.conda
 ```
 
-Si quieres sobreescribir lo existente (no recomendado salvo que sepas por qué):
+Publish to `irl-kilted` (overwrite enabled):
 
 ```bash
-pixi run rattler-build upload prefix --channel "${CHANNEL}" --force output/linux-64/*.conda
+cd ros-kilted
+export PREFIX_API_KEY="...your_api_key..."
+
+pixi run rattler-build upload prefix \
+  --channel irl-kilted \
+  --force \
+  output/linux-64/*.conda
+```
+
+If consumers can't see the new packages, the common fix is repodata cache cleanup on the consumer side:
+
+```bash
+pixi clean cache --repodata -y
 ```
 
 ---
 
-## 7) Reproducir lo que hace CI (visión general)
+## 8) What CI does (high level)
 
-En PRs, el workflow hace (por plataforma):
+Per platform, CI typically runs:
 
 1. `pixi run vinca --platform <platform> -m -n`
 2. `pixi run check-patches`
-3. (Opcional) restaura un cache de `output/<platform>`
-4. `pixi run rattler-build build --recipe-dir recipes --target-platform <platform> ... --skip-existing`
-5. Actualiza índice local (cache) con `rattler-index fs <folder>/.. --force`
+3. `pixi run rattler-build build --recipe-dir recipes --target-platform <platform> ... --skip-existing`
+4. `pixi run rattler-index fs ./output --force`
 
-La publicación a un channel se hace típicamente **en un job separado** (o en otra pipeline) porque requiere secretos (`PREFIX_API_KEY`).
+Publishing is usually a separate job/pipeline because it needs secrets (`PREFIX_API_KEY`).
 
 ---
 
-## 8) Tips de depuración
+## 9) Debugging tips
 
-- Ver qué se ha construido:
-  - `ls output/linux-64 | head`
-- Comparar “recetas vs artefactos construidos”:
-  - `python build_gap_report.py --output-dir output --recipes-dir recipes`
-- Si fallan parches:
-  - revisa `patch/` y las secciones `source: ... patches:` de la receta generada.
+- Inspect produced artifacts:
+  - `ls -1 output/linux-64/*.conda | head`
+- Compare “recipes vs built artifacts”:
+  - `python build_gap_report.py --platform linux-64 --output-dir output --recipes-dir recipes`
+- If patches fail:
+  - check `patch/` and the generated recipe `source: ... patches:`.
 
-### Eigen: detectar y evitar contaminación desde el sistema
+### Eigen: detect and avoid system contamination
 
-Si un workspace consumidor falla con errores raros de Eigen, casi siempre es por mezclar dos árboles de includes:
+If a consumer workspace fails with Eigen-related errors, a common cause is mixing include trees:
 
 - System Eigen: `/usr/include/eigen3`
 - Pixi/conda Eigen: `$CONDA_PREFIX/include/eigen3`
 
 Checklist:
-- Busca `/usr/include/eigen3` en `build/**/flags.make` del workspace consumidor.
-- Si aparece, identifica el “inyector” mirando qué dependencia mete `-isystem /usr/include/eigen3`.
 
-Lecciones aprendidas de kilted:
-- Algunos paquetes pueden exportar `INTERFACE_INCLUDE_DIRECTORIES` contaminados en sus `*.cmake` instalados. En ese caso, una técnica efectiva (y reproducible) es un `build:post_process` en la receta que haga un replace exacto (ej. eliminar `;/usr/include/eigen3` en `*.cmake`).
-- PCL puede forzar `find_package(Eigen3 3.3 REQUIRED NO_MODULE)`; si el entorno pixi instala Eigen 5.x, esa configuración puede considerarse incompatible y acabar resolviendo Eigen del sistema.
-
-Referencia concreta (runbook con el caso real y las recetas):
-- [irl-docs/buildfarm_easynav.md](buildfarm_easynav.md)
+- Search for `/usr/include/eigen3` in `build/**/flags.make`.
+- If present, identify which dependency injects `-isystem /usr/include/eigen3`.
 
 ---
 
-## 9) Checklist rápido (Linux)
+## 10) Quick checklist (Linux)
 
 ```bash
 cd ros-kilted
@@ -212,19 +215,11 @@ pixi install
 pixi run remove-recipes
 pixi run vinca --platform linux-64 -m -n
 pixi run check-patches
-pixi run rattler-build build --recipe-dir recipes --target-platform linux-64 -m ./conda_build_config.yaml -c https://repo.prefix.dev/conda-forge --skip-existing
+pixi run rattler-build build --recipe-dir recipes --target-platform linux-64 -m ./conda_build_config.yaml -c https://prefix.dev/robostack-kilted -c https://repo.prefix.dev/conda-forge --skip-existing
+pixi run rattler-index fs ./output --force
+
 export PREFIX_API_KEY="..."
-pixi run rattler-build upload prefix --channel tu-org/tu-canal --skip-existing output/linux-64/*.conda
+pixi run rattler-build upload prefix --channel your-org/your-channel --skip-existing output/linux-64/*.conda
 ```
 
----
-
-## 10) Próximos ajustes (para esta sesión)
-
-Dime:
-
-1) ¿Qué **channel** quieres usar en prefix.dev (nombre exacto)?
-2) ¿Qué **plataforma(s)** vas a construir ahora mismo (linux-64, win-64, etc.)?
-3) ¿Quieres **construir todo** o solo un subconjunto de paquetes (y cuál)?
-
-Con eso adapto este tutorial a tu caso con comandos exactos y un “runbook” mínimo.
+Platform note: platform selection happens in the commands that support it (`vinca --platform ...` and `rattler-build --target-platform ...`).

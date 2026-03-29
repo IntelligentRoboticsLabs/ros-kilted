@@ -1,0 +1,110 @@
+[workspace]
+name = "easynav_plugins_ws"
+channels = ["file:///var/home/fmrico/pixi/pixi-buildfarm/ros-kilted/output", "https://prefix.dev/irl-kilted", "https://prefix.dev/robostack-kilted", "https://prefix.dev/conda-forge"]
+platforms = ["linux-64"]
+
+
+[dependencies]
+# Base ROS dependencies
+ros-kilted-ros-base = "*"
+pkg-config = "*"
+compilers = "*"
+make = "*"
+ninja = "*"
+ros-kilted-ros2cli = "*"
+
+# CLI autocompletion for `ros2` (argcomplete)
+argcomplete = "*"
+
+# Runtime deps for easynav_tools TUI
+rich = "*"
+platformdirs = "*"
+typing_extensions = "*"
+pydantic = "*"
+
+# PCL (and several ROS packages) still expect Eigen3 (3.x) config semantics.
+# Pin to Eigen < 5 to avoid CMake falling back to system Eigen (/usr/include/eigen3).
+eigen = "<5"
+
+# Prefer Zenoh middleware
+ros-kilted-rmw-zenoh-cpp = "*"
+
+# Build tools
+colcon-common-extensions = "*"
+cmake = "<4"
+
+# Workspace dependencies
+ros-kilted-ament-cmake = "*"
+ros-kilted-ament-lint-auto = "*"
+ros-kilted-ament-lint-common = "*"
+ros-kilted-controller-manager = "*"
+ros-kilted-gz-plugin-vendor = "*"
+ros-kilted-gz-ros2-control-demos = "*"
+ros-kilted-gz-sim-vendor = "*"
+ros-kilted-joint-state-publisher = "*"
+ros-kilted-joint-state-publisher-gui = "*"
+ros-kilted-joy = "*"
+ros-kilted-rclcpp = "*"
+ros-kilted-robot-state-publisher = "*"
+ros-kilted-ros-gz = "*"
+ros-kilted-ros-gz-bridge = "*"
+ros-kilted-ros-gz-image = "*"
+ros-kilted-ros-gz-sim = "*"
+ros-kilted-rviz2 = "*"
+ros-kilted-teleop-twist-joy = "*"
+ros-kilted-teleop-twist-keyboard = "*"
+ros-kilted-twist-stamper = "*"
+ros-kilted-twist-mux = "*"
+ros-kilted-urdf = "*"
+ros-kilted-urdfdom = "*"
+ros-kilted-xacro = "*"
+
+# Locally-built EasyNav + NavMap artifacts (from file:///.../ros-kilted/output)
+ros-kilted-easynav = "*"
+ros-kilted-easynav-bonxai-maps-manager = "*"
+ros-kilted-easynav-common = "*"
+ros-kilted-easynav-controller = "*"
+ros-kilted-easynav-core = "*"
+ros-kilted-easynav-costmap-common = "*"
+ros-kilted-easynav-costmap-maps-manager = "*"
+ros-kilted-easynav-costmap-localizer = "*"
+ros-kilted-easynav-costmap-planner = "*"
+ros-kilted-easynav-fusion-localizer = "*"
+ros-kilted-easynav-gps-localizer = "*"
+ros-kilted-easynav-interfaces = "*"
+ros-kilted-easynav-localizer = "*"
+ros-kilted-easynav-maps-manager = "*"
+ros-kilted-easynav-mpc-controller = "*"
+ros-kilted-easynav-mppi-controller = "*"
+ros-kilted-easynav-navmap-localizer = "*"
+ros-kilted-easynav-navmap-maps-manager = "*"
+ros-kilted-easynav-navmap-planner = "*"
+ros-kilted-easynav-octomap-maps-manager = "*"
+ros-kilted-easynav-planner = "*"
+ros-kilted-easynav-routes-maps-manager = "*"
+ros-kilted-easynav-sensors = "*"
+ros-kilted-easynav-serest-controller = "*"
+ros-kilted-easynav-simple-common = "*"
+ros-kilted-easynav-simple-controller = "*"
+ros-kilted-easynav-simple-localizer = "*"
+ros-kilted-easynav-simple-maps-manager = "*"
+ros-kilted-easynav-simple-planner = "*"
+ros-kilted-easynav-support-py = "*"
+ros-kilted-easynav-system = "*"
+ros-kilted-easynav-tools = "*"
+ros-kilted-easynav-vff-controller = "*"
+ros-kilted-navmap-core = "*"
+ros-kilted-navmap-ros = "*"
+ros-kilted-navmap-ros-interfaces = "*"
+ros-kilted-yaets = "*"
+
+
+[tasks]
+build = {cmd = "bash -lc 'colcon build --cmake-args -DEigen3_DIR=\"$CONDA_PREFIX/share/eigen3/cmake\"'", description = "Build the ROS workspace"}
+test = {cmd = "bash -lc 'colcon test && colcon test-result --verbose'", description = "Run tests for the workspace"}
+clean = {cmd = "rm -rf build install log", description = "Clean build artifacts (build, install, log directories)"}
+
+# Scripts to source on environment activation, found after first colcon build.
+
+[activation]
+scripts = ["activate.sh"]

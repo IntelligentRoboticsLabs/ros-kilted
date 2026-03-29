@@ -1,41 +1,31 @@
-# RoboStack (for ROS kilted)
+# IRL ROS kilted buildfarm (Pixi + Vinca + Rattler)
 
-[![Conda](https://img.shields.io/conda/dn/robostack-kilted/ros-kilted-desktop?style=flat-square)](https://anaconda.org/robostack/)
-[![GitHub Repo stars](https://img.shields.io/github/stars/robostack/ros-kilted?style=flat-square)](https://github.com/RoboStack/ros-kilted/)
-[![QUT Centre for Robotics](https://img.shields.io/badge/collection-QUT%20Robotics-%23043d71?style=flat-square)](https://qcr.github.io/)
+This repository is a fork of the upstream RoboStack ROS kilted packaging repo:
 
-[![Platforms](https://img.shields.io/badge/platforms-linux%20%7C%20win%20%7C%20macos%20%7C%20macos_arm64%20%7C%20linux_aarch64-green.svg?style=flat-square)](https://github.com/RoboStack/ros-kilted)
-[![Azure DevOps builds (branch)](https://img.shields.io/github/actions/workflow/status/robostack/ros-kilted/linux.yml?branch=buildbranch_linux&label=build%20linux&style=flat-square)](https://github.com/RoboStack/ros-kilted/actions/workflows/linux.yml)
-[![Azure DevOps builds (branch)](https://img.shields.io/github/actions/workflow/status/robostack/ros-kilted/win.yml?branch=buildbranch_win&label=build%20win&style=flat-square)](https://github.com/RoboStack/ros-kilted/actions/workflows/win.yml)
-[![Azure DevOps builds (branch)](https://img.shields.io/github/actions/workflow/status/robostack/ros-kilted/osx.yml?branch=buildbranch_osx&label=build%20osx&style=flat-square)](https://github.com/RoboStack/ros-kilted/actions/workflows/osx.yml)
-[![Azure DevOps builds (branch)](https://img.shields.io/github/actions/workflow/status/robostack/ros-kilted/osx_arm64.yml?branch=buildbranch_osx_arm64&label=build%20osx-arm64&style=flat-square)](https://github.com/RoboStack/ros-kilted/actions/workflows/osx_arm64.yml)
-[![Azure DevOps builds (branch)](https://img.shields.io/github/actions/workflow/status/robostack/ros-kilted/build_linux_aarch64.yml?branch=buildbranch_linux_aarch64&label=build%20aarch64&style=flat-square)](https://github.com/RoboStack/ros-kilted/actions/workflows/build_linux_aarch64.yml)
+- https://github.com/RoboStack/ros-kilted
 
-[![GitHub issues](https://img.shields.io/github/issues-raw/robostack/ros-kilted?style=flat-square)](https://github.com/RoboStack/ros-kilted/issues)
-[![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/robostack/ros-kilted?style=flat-square)](https://github.com/RoboStack/ros-kilted/issues?q=is%3Aissue+is%3Aclosed)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/robostack/ros-kilted?style=flat-square)](https://github.com/RoboStack/ros-kilted/pulls)
-[![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/robostack/ros-kilted?style=flat-square)](https://github.com/RoboStack/ros-kilted/pulls?q=is%3Apr+is%3Aclosed)
+In this fork, we use the same toolchain (Pixi + Vinca + rattler-build) to build and publish **additional ROS 2 kilted packages** produced by the **Intelligent Robotics Lab (IRL)**:
 
-[__Table with all available packages & architectures__](https://robostack.github.io/kilted.html)
+- https://intelligentroboticslab.gsyc.urjc.es/
 
-## Why ROS and Conda?
+The resulting binaries are published to prefix.dev (notably the `irl-kilted` channel) and can also be consumed locally via a file-based channel.
 
-Welcome to RoboStack, which tightly couples ROS with Conda, a cross-platform, language-agnostic package manager. We provide ROS binaries for Linux, macOS, Windows and ARM (Linux). Installing other recent packages via conda-forge side-by-side works easily, e.g. you can install TensorFlow/PyTorch in the same environment as ROS kilted without any issues. As no system libraries are used, you can also easily install ROS kilted on any recent Linux Distribution - including older versions of Ubuntu. As the packages are pre-built, it saves you from compiling from source, which is especially helpful on macOS and Windows. No root access is required, all packages live in your home directory. We have recently written up a [paper](https://arxiv.org/abs/2104.12910) and [blog post](https://medium.com/robostack/cross-platform-conda-packages-for-ros-fa1974fd1de3) with more information.
+## Documentation
 
-## Attribution
+- PlanSys2
+    - Build & publish (package creators): `irl-docs/plansys2/buildfarm_plansys2.md`
+    - User workspace template (Pixi): `irl-docs/plansys2/pixi.toml` and `irl-docs/plansys2/activate.sh`
 
-If you use RoboStack in your academic work, please refer to the following paper:
+- EasyNav (EasyNavigation) + NavMap
+    - Build & publish (package creators): `irl-docs/easynav/buildfarm_easynav.md`
+    - User workspace template (Pixi): `irl-docs/easynav/pixi.toml` and `irl-docs/easynav/activate.sh`
 
-```bibtex
-@article{FischerRAM2021,
-    title={A RoboStack Tutorial: Using the Robot Operating System Alongside the Conda and Jupyter Data Science Ecosystems},
-    author={Tobias Fischer and Wolf Vollprecht and Silvio Traversaro and Sean Yen and Carlos Herrero and Michael Milford},
-    journal={IEEE Robotics and Automation Magazine},
-    year={2021},
-    doi={10.1109/MRA.2021.3128367},
-}
-```
+## About Pixi
 
-## Installation, FAQ, and Contributing Instructions
+Pixi is a developer workflow tool that manages reproducible environments, tasks, and activation hooks on top of the Conda ecosystem.
 
-Please see our instructions [here](https://robostack.github.io/GettingStarted.html).
+- Pixi: https://pixi.sh/
+- Commands & troubleshooting in this repo: `irl-docs/pixi.md`
+- Prefix.dev channels:
+    - `irl-kilted`: https://prefix.dev/channels/irl-kilted
+    - `robostack-kilted`: https://prefix.dev/channels/robostack-kilted

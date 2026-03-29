@@ -1,0 +1,69 @@
+ros_distro: kilted
+
+# mapping for package keys
+conda_index:
+  - robostack.yaml
+  - packages-ignore.yaml
+
+# Keep in sync with the main build_number used by ros-kilted
+build_number: 15
+
+mutex_package:
+  name: "ros2-distro-mutex"
+  version: "0.13.0"
+  upper_bound: "x.x"
+  run_constraints:
+    - libboost 1.88.*
+    - libboost-devel 1.88.*
+    - pcl 1.15.1.*
+    - gazebo 11.*
+    - libprotobuf 6.31.1.*
+    - vtk 9.5.2.*
+
+packages_skip_by_deps:
+  - if: not linux
+    then:
+      - pendulum_control
+      - rttest
+      - tlsf
+      - tlsf_cpp
+
+packages_remove_from_deps:
+  - if: not linux
+    then:
+      - pendulum_control
+      - rttest
+      - tlsf
+      - tlsf_cpp
+
+# Treat packages already built in robostack-kilted as existing, so we only
+# generate recipes that are missing for this PlanSys2 subset.
+skip_existing:
+  - https://conda.anaconda.org/robostack-kilted/
+
+# Only select PlanSys2 packages; dependencies are pulled in automatically.
+packages_select_by_deps:
+  # PlanSys2 core packages (kilted)
+  - plansys2_bringup
+  - plansys2_bt_actions
+  - plansys2_core
+  - plansys2_domain_expert
+  - plansys2_executor
+  - plansys2_lifecycle_manager
+  - plansys2_msgs
+  - plansys2_pddl_parser
+  - plansys2_planner
+  - plansys2_popf_plan_solver
+  - plansys2_problem_expert
+  - plansys2_support_py
+  - plansys2_terminal
+  - plansys2_tests
+  - plansys2_tools
+
+  # Main dependencies explicitly requested for this subset
+  - popf
+  - rclcpp_cascade_lifecycle
+
+patch_dir: patch
+rosdistro_snapshot: rosdistro_snapshot.yaml
+rosdistro_additional_recipes: rosdistro_additional_recipes.yaml

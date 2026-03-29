@@ -1,0 +1,61 @@
+[workspace]
+name = "plansys2_examples"
+channels = [
+  "file:///var/home/fmrico/pixi/pixi-buildfarm/ros-kilted/output",
+  "https://prefix.dev/irl-kilted",
+  "https://prefix.dev/robostack-kilted",
+  "https://prefix.dev/conda-forge",
+]
+platforms = ["linux-64"]
+
+[dependencies]
+# Base ROS dependencies
+ros-kilted-ros-base = "*"
+ros-kilted-ros2cli = "*"
+ros-kilted-nav2-msgs = "*"
+
+# Prefer Zenoh middleware
+ros-kilted-rmw-zenoh-cpp = "*"
+
+# CLI autocompletion for `ros2` (argcomplete)
+argcomplete = "*"
+
+# Build tools
+colcon-common-extensions = "*"
+cmake = "<4"
+pkg-config = "*"
+compilers = "*"
+make = "*"
+ninja = "*"
+
+# PCL (and several ROS packages) still expect Eigen3 (3.x) config semantics.
+# Pin to Eigen < 5 to avoid CMake falling back to system Eigen (/usr/include/eigen3).
+eigen = "<5"
+
+# PlanSys2 runtime (from local output first, then remote channels)
+ros-kilted-plansys2-bringup = "*"
+ros-kilted-plansys2-bt-actions = "*"
+ros-kilted-plansys2-core = "*"
+ros-kilted-plansys2-domain-expert = "*"
+ros-kilted-plansys2-executor = "*"
+ros-kilted-plansys2-lifecycle-manager = "*"
+ros-kilted-plansys2-msgs = "*"
+ros-kilted-plansys2-pddl-parser = "*"
+ros-kilted-plansys2-planner = "*"
+ros-kilted-plansys2-popf-plan-solver = "*"
+ros-kilted-plansys2-problem-expert = "*"
+ros-kilted-plansys2-support-py = "*"
+ros-kilted-plansys2-terminal = "*"
+ros-kilted-plansys2-tools = "*"
+
+# POPF itself (needed by ros-kilted-plansys2-popf-plan-solver)
+ros-kilted-popf = "*"
+
+
+[tasks]
+build = { cmd = "bash -lc 'colcon build --cmake-args -DEigen3_DIR=\"$CONDA_PREFIX/share/eigen3/cmake\"'", description = "Build the ROS workspace" }
+test = { cmd = "bash -lc 'colcon test && colcon test-result --verbose'", description = "Run tests for the workspace" }
+clean = { cmd = "rm -rf build install log", description = "Clean build artifacts (build, install, log directories)" }
+
+[activation]
+scripts = ["activate.sh"]
