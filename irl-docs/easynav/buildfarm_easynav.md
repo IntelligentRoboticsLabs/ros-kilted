@@ -85,6 +85,80 @@ As a rule of thumb:
 
 If you need a curated set of binaries from `irl-kilted`, keep the channel order in `pixi.toml` so local artifacts override remote ones.
 
+### 2.5 Worked example: indoor testcase + Kobuki + Summit playgrounds
+
+This is the exact workflow we used in this repo to add content, build, and run:
+
+Repositories and branches:
+
+- https://github.com/EasyNavigation/easynav_indoor_testcase.git (branch: `main`)
+- https://github.com/EasyNavigation/easynav_playground_kobuki.git (branch: `klted`)
+- https://github.com/EasyNavigation/easynav_playground_summit.git (branch: `kilted`)
+
+Fetch the workspace content:
+
+```bash
+cd ~/easynav_plugins_ws
+mkdir -p src
+
+git clone -b main https://github.com/EasyNavigation/easynav_indoor_testcase.git src/easynav_indoor_testcase
+git clone -b klted https://github.com/EasyNavigation/easynav_playground_kobuki.git src/easynav_playground_kobuki
+git clone -b kilted https://github.com/EasyNavigation/easynav_playground_summit.git src/easynav_playground_summit
+```
+
+Import third-party repositories referenced by the playgrounds:
+
+```bash
+cd ~/easynav_plugins_ws
+
+vcs-import src < src/easynav_playground_kobuki/thirdparty.repos
+vcs-import src < src/easynav_playground_summit/thirdparty.repos
+```
+
+Build:
+
+```bash
+cd ~/easynav_plugins_ws
+pixi run build
+```
+
+Run (multiple terminals):
+
+1) Open each terminal and enter the environment:
+
+```bash
+cd ~/easynav_plugins_ws
+pixi shell
+```
+
+2) Terminal A (Zenoh daemon, start this before any nodes):
+
+```bash
+ros2 run rmw_zenoh_cpp rmw_zenohd
+```
+
+3) Terminal B (Kobuki playground):
+
+```bash
+ros2 launch easynav_playground_kobuki playground_kobuki.launch.py
+```
+
+4) Terminal C (indoor testcase + costmap):
+
+```bash
+ros2 launch easynav_indoor_testcase easynav_costmap_serest.launch.py
+```
+
+5) Optional: terminal D (TUI):
+
+```bash
+ros2 run easynav_tools tui
+```
+
+Screenshot:
+
+![EasyNav costmap running inside Pixi](easynav_costmap_pixi.jpeg)
+
 ---
 
 ## 3) For package creators: buildfarm in this repo

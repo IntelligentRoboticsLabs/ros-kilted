@@ -76,6 +76,75 @@ As a rule of thumb:
 - Use `ros2 launch ...` for bringing up the system.
 - Use `ros2 run ...` for individual nodes.
 
+### 2.5 Worked example: `plansys2_bt_example` with Nav2 simulation
+
+This is the workflow we used to add content, build, and run a PlanSys2 example.
+
+Repository and branch:
+
+- https://github.com/PlanSys2/ros2_planning_system_examples.git (branch: `kilted`)
+
+Fetch the workspace content:
+
+```bash
+cd ~/plansys2_examples_ws
+mkdir -p src
+
+git clone -b kilted https://github.com/PlanSys2/ros2_planning_system_examples.git src/ros2_planning_system_examples
+```
+
+Build:
+
+```bash
+cd ~/plansys2_examples_ws
+pixi run build
+```
+
+Run (multiple terminals):
+
+1) Open each terminal and enter the environment:
+
+```bash
+cd ~/plansys2_examples_ws
+pixi shell
+```
+
+2) Terminal A (Zenoh daemon, start this before any nodes):
+
+```bash
+ros2 run rmw_zenoh_cpp rmw_zenohd
+```
+
+3) Terminal B (Nav2 simulator used by the example):
+
+```bash
+ros2 run plansys2_bt_example nav2_sim_node
+```
+
+Alternatively, you can run a full Nav2 stack on a real robot (and skip `nav2_sim_node`).
+
+4) Terminal C (launch PlanSys2 with the Behavior Tree patrolling example config/actions):
+
+```bash
+ros2 launch plansys2_bt_example plansys2_bt_example_launch.py
+```
+
+5) Terminal D (PlanSys2 controller for the example):
+
+```bash
+ros2 run plansys2_bt_example assemble_controller_node
+```
+
+6) Optional: Terminal E (RQt GUI, add the PlanSys2 visualization plugins):
+
+```bash
+rqt_gui
+```
+
+Screenshot:
+
+![PlanSys2 BT example running inside Pixi](plansys2_bt_example.png)
+
 ---
 
 ## 3) For package creators: buildfarm in this repo
