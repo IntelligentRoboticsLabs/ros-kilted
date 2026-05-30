@@ -86,7 +86,7 @@ doxygen:
 draco:
   robostack: [draco]
 eigen:
-  robostack: [eigen]
+  robostack: [eigen, eigen-abi-devel]
 emacs:
   robostack: [emacs]
 festival:
@@ -287,6 +287,8 @@ libdw-dev:
     linux: [elfutils]
     osx: []
     win64: []
+libexpected-dev:
+  robostack: [cpp-expected]
 libfcl-dev:
   robostack: [fcl]
 libffi-dev:
@@ -326,6 +328,8 @@ libglu-dev:
     linux: [libglu]
     osx: []
     win64: []
+libgmock-dev:
+  robostack: [gmock]
 libgoogle-glog-dev:
   robostack: [glog]
 libgpgme-dev:
@@ -420,9 +424,9 @@ libpcl-all:
   robostack: [pcl]
 libpcl-all-dev:
   robostack:
-    linux: [pcl, libboost-devel, vtk-base, libopengl-devel, libgl-devel]
-    osx: [pcl, libboost-devel, vtk-base]
-    win64: [pcl, libboost-devel, vtk-base]
+    linux: [pcl, libboost-devel, vtk-base, libopengl-devel, libgl-devel, eigen-abi-devel]
+    osx: [pcl, libboost-devel, vtk-base, eigen-abi-devel]
+    win64: [pcl, libboost-devel, vtk-base, eigen-abi-devel]
 libpng-dev:
   robostack: [libpng]
 libpoco-dev:
@@ -784,6 +788,8 @@ python3-catkin-tools:
   robostack: [catkin_tools]
 python3-cantools-pip:
   robostack: [cantools]
+python3-cbor2:
+  robostack: [cbor2]
 python3-cherrypy3:
   robostack: [cherrypy]
 python3-click:
@@ -810,6 +816,10 @@ python3-docutils:
   robostack: [docutils]
 python3-empy:
   robostack: [empy]
+python3-fastapi:
+  robostack: [fastapi]
+python3-filelock:
+  robostack: [filelock]
 python3-flake8:
   robostack: [flake8]
 python3-flake8-comprehensions:
@@ -905,6 +915,8 @@ python3-pycodestyle:
   robostack: [pycodestyle]
 python3-pycryptodome:
   robostack: [pycryptodome, pycryptodomex]
+python3-pydantic:
+  robostack: [pydantic]
 python3-pydot:
   robostack: [pydot]
 python3-pygraphviz:
@@ -979,6 +991,8 @@ python3-tk:
   robostack: [tk]
 python3-tornado:
   robostack: [tornado]
+python3-transforms3d:
+  robostack: [transforms3d]
 python3-twisted:
   robostack: [twisted]
 python3-typeguard:
@@ -987,8 +1001,12 @@ python3-unidiff:
   robostack: [unidiff]
 python3-usb:
   robostack: [pyusb]
+python3-uvicorn:
+  robostack: [uvicorn]
+python3-utm:
+  robostack: [utm]
 python3-vcstool:
-  robostack: [vcstool]
+  robostack: [vcs2l]
 python3-flake8-docstrings:
   robostack: [flake8-docstrings]
 python3-flake8-import-order:
@@ -1056,6 +1074,8 @@ socat:
     linux: [socat]
     osx: [socat]
     win64: []
+sophus:
+  robostack: [sophus]
 spacenavd:
   robostack: [libspnav]
 spdlog:
