@@ -114,6 +114,39 @@ depends-on = ["plansys2-index"]
 args = [{ arg = "platform", default = "linux-64" }]
 description = "One-liner: clean, generate recipes, build, and index the PlanSys2 subset."
 
+# Subset helpers (NavMap)
+# These tasks use ./navmap_subset/vinca.yaml to generate only the NavMap-related recipes.
+
+[tasks.navmap-clean]
+cmd = "rm -rf output/{{ platform }} output/bld"
+depends-on = ["remove-recipes"]
+args = [{ arg = "platform", default = "linux-64" }]
+description = "Remove generated recipes and build artifacts for the NavMap subset (recipes/, output/<platform>/, output/bld)."
+
+[tasks.navmap-generate-recipes]
+cmd = "vinca -d ./navmap_subset --platform {{ platform }} -m"
+depends-on = ["navmap-clean"]
+args = [{ arg = "platform", default = "linux-64" }]
+description = "Generate recipes for the NavMap subset using navmap_subset/vinca.yaml."
+
+[tasks.navmap-build]
+cmd = "rattler-build build --recipe-dir ./recipes --target-platform {{ platform }} -m ./conda_build_config.yaml -c https://prefix.dev/robostack-kilted -c https://prefix.dev/conda-forge --skip-existing"
+depends-on = ["navmap-generate-recipes"]
+args = [{ arg = "platform", default = "linux-64" }]
+description = "Build conda packages for the NavMap subset recipes."
+
+[tasks.navmap-index]
+cmd = "rattler-index fs ./output --force"
+depends-on = ["navmap-build"]
+args = [{ arg = "platform", default = "linux-64" }]
+description = "Index ./output as a local conda channel (repodata.json) after building."
+
+[tasks.navmap-all]
+cmd = "echo 'NavMap subset: clean → recipes → build → index done.'"
+depends-on = ["navmap-index"]
+args = [{ arg = "platform", default = "linux-64" }]
+description = "One-liner: clean, generate recipes, build, and index the NavMap subset."
+
 [tasks.build]
 cmd = "rattler-build build --recipe-dir ./recipes -m ./conda_build_config.yaml -c https://prefix.dev/robostack-kilted -c https://prefix.dev/conda-forge --skip-existing"
 depends-on = ["generate-recipes"]
