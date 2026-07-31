@@ -74,6 +74,7 @@ packages_select_by_deps:
   - easynav_navmap_maps_manager
   - easynav_navmap_planner
   - easynav_octomap_maps_manager
+  - easynav_regulated_pp_controller
   - easynav_routes_maps_manager
   - easynav_serest_controller
   - easynav_simple_common
